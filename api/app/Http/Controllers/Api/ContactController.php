@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ContactRequest;
 use App\Models\Contact;
 use Illuminate\Http\Request;
 use App\Http\Resources\ContactResource;
@@ -25,7 +26,7 @@ class ContactController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(ContactRequest $request)
     {
         $contact = Contact::create($request->all());
 
@@ -50,7 +51,7 @@ class ContactController extends Controller
      * @param  \App\Models\Contact  $contact
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(ContactRequest $request, $id)
     {
         $contact = Contact::findOrFail($id);
 
@@ -58,7 +59,7 @@ class ContactController extends Controller
         $contact->save();
 
 
-        return new ContactResource($contact);
+        return $request->all();
     }
 
     /**
