@@ -3,6 +3,8 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\ContactController;
+use App\Http\Middleware\JwtSeguridad;
+use App\Http\Controllers\Api\AuthController;
 
 /*
 |--------------------------------------------------------------------------
@@ -15,8 +17,8 @@ use App\Http\Controllers\Api\ContactController;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-});
+Route::post('/login', [AuthController::class, 'login']);
 
-Route::apiResource('contacts', ContactController::class);
+Route::middleware(JwtSeguridad::class)->group(function () {
+    Route::apiResource('contacts', ContactController::class);
+});
