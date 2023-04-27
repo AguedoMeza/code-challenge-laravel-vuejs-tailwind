@@ -92,7 +92,9 @@
         </div>
 
         <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-          <button type="button" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-500 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm" @click="showModal=false">
+          <button 
+          type="button" 
+          class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-500 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm" @click="showModal=false">
             Cancel
           </button>
         </div>
@@ -102,6 +104,22 @@
 
 
  <div class="sm:px-1 sm:py-1 lg:px-20 lg:py-20 ">
+
+  <div class="flex justify-end mt-4">
+  <button 
+  type="button" 
+  class="inline-block rounded bg-white px-4 pb-2 pt-2 text-xs font-medium uppercase leading-normal text-neutral-800  transition duration-150 ease-in-out hover:bg-neutral-100 focus:bg-neutral-100 focus:outline-none focus:ring-0 active:bg-neutral-200 " 
+  @click="showLoginModal = true">
+    Login
+  </button>
+  <button 
+  type="button" 
+  class="inline-block rounded bg-white px-4 pb-2 pt-2 text-xs font-medium uppercase leading-normal text-neutral-800  transition duration-150 ease-in-out hover:bg-neutral-100 focus:bg-neutral-100 focus:outline-none focus:ring-0 active:bg-neutral-200 "
+  @click="logout()">
+    Logout
+  </button>
+</div>
+
   <div class=" flex flex-col justify-rigth sm:px-1 sm:py-2 lg:px-40 bg-white">
     <div class="  text-center  ">
       <h1 class="  text-4xl font-bold text-grey-900 "> My Contacts </h1>
@@ -110,9 +128,14 @@
   
     <div class="flex flex-col  justify-rigth lg:py-4 sm:py-1">
       <div class="flex justify-end items-center" >
-        <button @click="showModal = true;  this.newContact = {}; this.modoEdicion = false;" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-          Add Contact
-      </button> 
+        <button v-if="isLoggedIn" @click="showModal = true;  this.newContact = {}; this.modoEdicion = false;" 
+            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+           Add Contact
+        </button>
+        <button v-else @click="showLoginModal = true" 
+                class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+          Log in to add a contact
+        </button>
     </div>
     </div>
     <div class="container mx-auto pt-9">
@@ -147,6 +170,59 @@
 
  </div>
 
+
+<div class="fixed z-10 inset-0 overflow-y-auto" v-show="showLoginModal" @click.self="showLoginModal = false">
+  <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+    <div class="fixed inset-0 transition-opacity" aria-hidden="true" @click="showLoginModal = false; showAuthError = false">
+      <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+    </div>
+    <div class="inline-block align-bottom bg-white rounded-lg text-center overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+      <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+        <div class="sm:flex sm:items-start">
+          <div class="text-center sm:text-left">
+            <h3 class="text-lg leading-6 font-medium text-gray-900">Login</h3>
+            <div class="mt-2">
+              <form>
+                <div v-if="showAuthError" class="text-red-500   text-xs  mt-2">Authentication error. Please log in again.</div>
+                <div>
+                  <label for="username" class="block text-sm font-medium text-gray-700">Username</label>
+                  <input 
+                  v-model="login.email"
+                  type="text" 
+                  name="username" 
+                  id="username" 
+                  autocomplete="username" 
+                  class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                  >
+                </div>
+
+                <div class="mt-4">
+                  <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
+                  <input 
+                  v-model="login.password"
+                  type="password" 
+                  name="password" 
+                  id="password" 
+                  autocomplete="current-password" 
+                  class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+        <button 
+        type="button" 
+        class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-500 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm" 
+        @click="iniciarSesion"
+        >
+          Login
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
  
 </template>
 
@@ -157,8 +233,13 @@ import axios from 'axios';
 
 
 export default {
+
+ 
   data() {
     return {
+      isLoggedIn: false,
+      showAuthError: false,
+      showLoginModal: false,
       first_name: '',
       botonDesactivado: false,
       firstNameError: null,
@@ -173,9 +254,15 @@ export default {
         last_name: '',
         phone: '',
         email: ''
+      },
+    
+      login: {
+        email: '',
+        password: ''
       }
     }
   },
+
   props: {
     title: {
       type: String,
@@ -187,14 +274,56 @@ export default {
     }
   },
   mounted() {
+    const token = localStorage.getItem("token");
+    if (token) {
+      this.isLoggedIn = true;
+    }
     this.fetchContacts();
   },
   methods: {
-   
+
+    handleErroLogin(error) {
+      if (error.response && error.response.status === 401) {
+        this.showAuthError = true;
+        this.showLoginModal = true;
+        this.contacts = [];
+      } else {
+        console.log(error);
+      }
+    },
+
+    logout() {
+      localStorage.removeItem('token');
+      this.contacts = [];
+      this.isLoggedIn = false
+    },
+
+    iniciarSesion() {
+      axios.post(`${import.meta.env.VITE_CONTACTS_API}/login`, this.login, {
+        
+      })
+      .then(response => {
+        localStorage.setItem('token', response.data.token);
+
+        this.isLoggedIn = true;
+        this.showLoginModal = false;
+        this.showAuthError = false;
+        this.login.email = '';
+        this.login.password = '';
+        this.fetchContacts();
+     
+      })
+      .catch(error => {
+         this.handleErroLogin(error);
+      });
+    },
+
     fetchContacts() {
     
       axios.get(`${import.meta.env.VITE_CONTACTS_API}/contacts`, {
-        
+        headers: {
+            Authorization: localStorage.getItem('token')
+          }
       })
         .then(response => {
           this.contacts = response.data.data;
@@ -220,7 +349,9 @@ export default {
     },
     createContact() {
       axios.post(`${import.meta.env.VITE_CONTACTS_API}/contacts`, this.newContact, {
-        
+        headers: {
+            Authorization: localStorage.getItem('token')
+          }
       })
         .then(response => {
           this.newContact.first_name = '';
@@ -264,16 +395,18 @@ export default {
 
     deleteContact(id) {
       axios.delete(`${import.meta.env.VITE_CONTACTS_API}/contacts/${id}`, {
-        
+        headers: {
+            Authorization: localStorage.getItem('token')
+          }
       })
       .then(response => {
-        // Find the index of the contact to be removed from the contacts array
-        const index = this.contacts.findIndex(contact => contact.id === id);
-        // Remove the contact from the contacts array
-        this.contacts.splice(index, 1);
+        this.fetchContacts();
       })
       .catch(error => {
         console.log(error);
+        if (error.response.status === 403) {
+          this.showLoginModal = true;
+        }
       });
     },
     editarContacto(contact) {
@@ -291,7 +424,8 @@ export default {
   if (this.contactoSeleccionadoId) { // usamos una variable separada para guardar el ID del contacto seleccionado
     axios.put(`${import.meta.env.VITE_CONTACTS_API}/contacts/${this.contactoSeleccionadoId}`, JSON.stringify(this.newContact), {
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        Authorization: localStorage.getItem('token')
       }
     })
     .then(response => {
